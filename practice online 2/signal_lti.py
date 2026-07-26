@@ -60,7 +60,7 @@ class DiscreteSignal:
     # Example: shifting a signal over 0..2 by 3 returns a signal over 3..5.
     def shift(self, k):
         shifted = DiscreteSignal(self.start_time+k,self.end_time+k)
-        shifted.values = self.values.copy()
+        shifted.values=self.values.copy()
         return shifted
 
     # Arguments: other is another DiscreteSignal.
