@@ -81,7 +81,7 @@ class FourierEpicycles:
         """
         # TODO: implement this method
         t_arr = np.atleast_1d(np.asarray(t, dtype=float))
-        result = np.zeroes_like(t_arr)
+        result = np.zeros_like(t_arr, dtype=complex)
 
         for n, c_n in self.coeffs.items():
             result += c_n * np.exp(1j * n * self.omega * t_arr)
