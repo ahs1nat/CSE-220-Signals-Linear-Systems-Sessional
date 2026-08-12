@@ -21,7 +21,7 @@ class ContinuousImage:
         plt.show()
 
 
-class CFT2D:
+class CFT2D: # this converts spatial brightness image into frequency components/computes the image's 2D frequency spectrum
     """Computes the 2D Continuous Fourier Transform of a ContinuousImage
     using separable numerical (trapezoidal) integration."""
 
@@ -36,8 +36,8 @@ class CFT2D:
         # detail instead of only very coarse (near-DC) variation.
         dx = self.x[1] - self.x[0]
         dy = self.y[1] - self.y[0]
-        self.u = np.linspace(-1 / (2 * dx), 1 / (2 * dx), self.I.shape[1])
-        self.v = np.linspace(-1 / (2 * dy), 1 / (2 * dy), self.I.shape[0])
+        self.u = np.linspace(-1 / (2 * dx), 1 / (2 * dx), self.I.shape[1]) # horizontal freq
+        self.v = np.linspace(-1 / (2 * dy), 1 / (2 * dy), self.I.shape[0]) # vertical freq
 
     def compute_cft(self):
         """
@@ -68,7 +68,35 @@ class CFT2D:
         real, imag : two 2D numpy arrays, each of shape self.I.shape
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement CFT2D.compute_cft")
+
+        I = self.I
+        x, y = self.x, self.y # image er x, y coordinates
+        u, v = self.u, self.v # frequencies
+
+        angle_ux = 2 * np.pi * np.outer(u, x)
+        cos_ux = np.cos(angle_ux)
+        sin_ux = np.sin(angle_ux)
+ 
+        A = np.trapezoid(I[:, None, :] * cos_ux[None, :, :], x=x, axis=-1)
+        B = np.trapezoid(I[:, None, :] * sin_ux[None, :, :], x=x, axis=-1)
+ 
+        angle_vy = 2 * np.pi * np.outer(v, y)
+        cos_vy = np.cos(angle_vy)
+        sin_vy = np.sin(angle_vy)
+ 
+        A_T = A.T
+        B_T = B.T
+ 
+        real = np.trapezoid(
+            cos_vy[:, None, :] * A_T[None, :, :] - sin_vy[:, None, :] * B_T[None, :, :],
+            x=y, axis=-1,
+        )
+        imag = -np.trapezoid(
+            cos_vy[:, None, :] * B_T[None, :, :] + sin_vy[:, None, :] * A_T[None, :, :],
+            x=y, axis=-1,
+        )
+ 
+        return real, imag
 
     def plot_magnitude(self):
         """
@@ -78,7 +106,12 @@ class CFT2D:
         debugging -- not called by the command-line entry point below.
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement CFT2D.plot_magnitude")
+        real, imag = self.compute_cft()
+        magnitude = np.sqrt(real ** 2 + imag ** 2)
+        plt.imshow(np.log(1 + magnitude), cmap='gray')
+        plt.title("Magnitude Spectrum (log scale)")
+        plt.axis('off')
+        plt.show()
 
 
 class FrequencyFilter:
@@ -137,7 +170,32 @@ class InverseCFT2D:
             for how it gets turned into a displayable edge map.
         """
         # TODO: implement this method
-        raise NotImplementedError("Implement InverseCFT2D.reconstruct")
+        real, imag = self.real, self.imag
+        u, v = self.u, self.v
+        x, y = self.x, self.y
+
+        angle_vy = 2 * np.pi * np.outer(v, y)
+        cos_vy = np.cos(angle_vy)
+        sin_vy = np.sin(angle_vy)
+ 
+        C = np.trapezoid(real[:, None, :] * cos_vy[:, :, None], x=v, axis=0)
+        S = np.trapezoid(real[:, None, :] * sin_vy[:, :, None], x=v, axis=0)
+        D = np.trapezoid(imag[:, None, :] * cos_vy[:, :, None], x=v, axis=0)
+        E = np.trapezoid(imag[:, None, :] * sin_vy[:, :, None], x=v, axis=0)
+ 
+        CmE = C - E
+        SpD = S + D
+ 
+        angle_ux = 2 * np.pi * np.outer(u, x)
+        cos_ux = np.cos(angle_ux)
+        sin_ux = np.sin(angle_ux)
+ 
+        image = np.trapezoid(
+            CmE[:, :, None] * cos_ux[None, :, :] - SpD[:, :, None] * sin_ux[None, :, :],
+            x=u, axis=1,
+        )
+ 
+        return image
 
 
 # =====================================================
