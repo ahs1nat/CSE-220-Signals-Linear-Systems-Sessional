@@ -91,6 +91,38 @@ class FourierEpicycles:
 
         return result
 
+    # ONLINE 23 A
+    #-------------
+    def prune_harmonics_by_energy(self, r):
+        energies = {}
+        for n in list(self.coeffs.keys()):
+            energies[n] = abs(self.coeffs[n]) ** 2
+        total_energy = sum(energies.values())
+        ordered_n = sorted(list(self.coeffs.keys()), key= lambda n : energies[n])
+        cumu = 0.0
+        keep = set()
+        for n in ordered_n:
+            if total_energy > 0 and cumu >= r * total_energy:
+                break
+            keep.add(n)
+            cumu += energies[n]
+
+        for n in self.coeffs.keys():
+            if n not in keep:
+                self.coeffs[n] = 0j
+
+        actual_ratio = (cumu / total_energy) if total_energy > 0 else 1.0
+        return len(keep), actual_ratio
+
+    def evaluate_reconstruction_error(self):
+        """
+        Mean Squared Error between the ground-truth samples self.signal
+        and the reconstruction self.approximate(self.t).
+        """
+        f_hat = self.approximate(self.t)
+        return float(np.mean(np.abs(self.signal - f_hat) ** 2))
+    #-------------
+
 
 if __name__ == "__main__":
     import sys
