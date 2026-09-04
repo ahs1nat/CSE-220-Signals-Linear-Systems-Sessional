@@ -1,0 +1,12 @@
+Task A -- big-integer multiplication
+input: inputs/3.txt
+method: dft
+operand A digits: 2048
+operand B digits: 2048
+base: 10000
+base digits per limb: 4
+operand A limbs: 512
+operand B limbs: 512
+transform length N: 1024
+product digits: 4095
+verification: MATCH
