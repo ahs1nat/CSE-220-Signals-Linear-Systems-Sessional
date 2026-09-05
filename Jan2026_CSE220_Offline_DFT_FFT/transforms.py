@@ -124,7 +124,6 @@ class FFTTransformer(DFTAnalyzer):
         if N & (N - 1):
             raise ValueError("FFT length must be a power of two")
 
-        # Bit-reversal permutation
         bits = N.bit_length() - 1
 
         reversed_indices = np.zeros(N, dtype=int)
@@ -141,13 +140,11 @@ class FFTTransformer(DFTAnalyzer):
 
         a = x[reversed_indices].copy()
 
-        # Radix-2 FFT
         size = 2
 
         while size <= N:
             half = size // 2
 
-            # Compute twiddle factors once for this stage
             twiddles = np.exp(
                 -2j * np.pi * np.arange(half) / size
             )
@@ -196,8 +193,41 @@ class ArbitraryLengthFFT(FFTTransformer):
 
     def transform(self, x):
         # TODO (bonus): implement this method
-        raise NotImplementedError("Bonus: implement ArbitraryLengthFFT.transform")
+        x = np.asarray(x, dtype=np.complex128)
+        N = len(x)
+        if N == 0:
+            return np.empty(0, dtype=np.complex128)
+        if N == 1:
+            return x.copy()
+
+        # chirp: w[n] = exp(-j*pi*n^2/N), for n = 0..N-1 (need up to n=N-1 for a,
+        # and up to n=N-1 for the symmetric b too)
+        n = np.arange(N)
+        chirp = np.exp(-1j * np.pi * (n**2) / N)
+
+        a = x * chirp
+
+        m = np.arange(-(N-1), N)
+        b = np.exp(1j * np.pi * (m**2) / N)         # length 2N-1
+
+        # convolution length needed: N + (2N-1) - 1 = 3N-2, pad to power of two
+        M = next_power_of_two(N + len(b) - 1)
+
+        A = np.zeros(M, dtype=np.complex128); A[:N] = a
+        B = np.zeros(M, dtype=np.complex128)
+
+        B[:N] = b[N-1:]        # b[0..N-1]   (m = 0..N-1)
+        B[M-(N-1):] = b[:N-1]  # b[-(N-1)..-1] wrapped to the end
+
+        Aspec = self.transform(A)
+        Bspec = self.transform(B)
+        conv = self.inverse(Aspec * Bspec)
+
+        result = chirp * conv[:N]
+        return result.astype(np.complex128)
 
     def inverse(self, spectrum):
         # TODO (bonus): implement this method
-        raise NotImplementedError("Bonus: implement ArbitraryLengthFFT.inverse")
+        spectrum = np.asarray(spectrum, dtype=np.complex128)
+        N = len(spectrum)
+        return (np.conjugate(self.transform(np.conjugate(spectrum))) / N).astype(np.complex128)

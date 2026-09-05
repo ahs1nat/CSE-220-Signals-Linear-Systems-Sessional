@@ -1,0 +1,9 @@
+Task B -- single blur run
+image: images/skyline256.png
+image size: 256 x 256 (grayscale)
+kernel: gaussian, size 21 x 21
+engine: dft
+linear convolution size: 276 x 276
+transform size used: 276 x 276
+verification max|spectral - direct| (64x64 corner): 1.588e-14
+verification verdict: OK

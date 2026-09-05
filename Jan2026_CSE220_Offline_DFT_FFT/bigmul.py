@@ -106,21 +106,18 @@ def from_limbs(sign, limbs, base_digits=BASE_DIGITS):
     # TODO: implement this function
     carry = 0
     digits = []
-    for limb in limbs:              # least significant first
+    for limb in limbs:
         total = limb + carry
         carry, digit = divmod(total, BASE)
         digits.append(digit)
 
-    while carry > 0:                # carry left over past the last limb
+    while carry > 0:
         carry, digit = divmod(carry, BASE)
         digits.append(digit)
 
-    # digits is now little-endian, valid limbs each in [0, BASE)
-    # strip leading zero limbs (i.e. trailing in this little-endian list)
     while len(digits) > 1 and digits[-1] == 0:
         digits.pop()
 
-    # convert little-endian limbs back into a decimal string (most significant first)
     text = str(digits[-1]) + "".join(str(d).zfill(base_digits) for d in reversed(digits[:-1]))
 
     if digits == [0]:
@@ -308,14 +305,11 @@ def run_single(path, method, out_dir):
         method,
     )
 
-    # Verification is the ONLY use of Python's actual big-integer
-    # multiplication.
     expected = str(int(text_a) * int(text_b))
 
     match = product == expected
     verdict = "MATCH" if match else "MISMATCH"
 
-    # Required output files.
     write_text(
         os.path.join(out_dir, "product.txt"),
         product,

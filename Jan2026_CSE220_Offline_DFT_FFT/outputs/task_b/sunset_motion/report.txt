@@ -1,0 +1,9 @@
+Task B -- single blur run
+image: images/sunset512.png
+image size: 512 x 512 (grayscale)
+kernel: motion, size 41 x 41
+engine: fft
+linear convolution size: 552 x 552
+transform size used: 1024 x 1024
+verification max|spectral - direct| (64x64 corner): 2.776e-16
+verification verdict: OK
