@@ -170,7 +170,7 @@ def convolve_plane(plane, kernel, engine, circular=False):
 
     result = np.real(result)
 
-    row_start = kh // 2
+    row_start = kh // 2 # // rounds down to nearest whole number
     col_start = kw // 2
 
     cropped = result[row_start:row_start + H, col_start:col_start + W]
@@ -200,9 +200,7 @@ def convolve_image(image, kernel, engine, circular=False):
 
         return np.stack(planes, axis=2)
 
-    raise ValueError(
-        "image must have shape (H, W) or (H, W, 3)"
-    )
+    raise ValueError("image must have shape (H, W) or (H, W, 3)")
 
 
 
@@ -251,15 +249,11 @@ def convolve_plane_direct(plane, kernel):
                     if cc < 0 or cc >= W:
                         continue
 
-                    total += (
-                        plane[rr, cc]
-                        * kernel[i, j]
-                    )
+                    total += (plane[rr, cc] * kernel[i, j])
 
             out[r, c] = total
 
     return out
-
 
 
 def run_single(path, kernel_name, param, engine_name, out_dir, gray=False):

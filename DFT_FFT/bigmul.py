@@ -184,7 +184,7 @@ def multiply_transform(a, b, engine):
 
     result = np.rint(convolution.real)
 
-    result = result[:required]
+    result = result[:required] # zero-padding removal
 
     return result.astype(np.int64), N
 
@@ -208,7 +208,8 @@ def multiply_schoolbook(a, b):
     result = np.zeros(len(a) + len(b) - 1, dtype=np.int64)
 
     for i in range(len(a)):
-        result[i:i + len(b)] += a[i] * b
+        for j in range(len(b)):
+            result[i + j] += a[i] * b[j]
 
     return result
 

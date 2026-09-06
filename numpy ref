@@ -46,3 +46,4 @@ np.sqrt(a), np.log(a), np.log2(a)
 np.dot(a, b)                          # matrix/vector product
 a @ b                                   # same as np.dot for 2D arrays
 
+arr = np.full(shape, 1+0j, dtype=complex)
